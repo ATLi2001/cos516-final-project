@@ -1,6 +1,5 @@
 from collections import deque
 import networkx as nx
-import pydot
 import matplotlib.pyplot as plt
 
 # one node in BDD
