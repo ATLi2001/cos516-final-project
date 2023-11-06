@@ -36,11 +36,22 @@ def create_app(test_config=None):
         encoding = request.form.get('encoding', '')
         #content = request.form['ordering']
         var = parse_utils.parseOrderingExpression(ordering)
-        encoding = parse_utils.parseBoolExpression(encoding, var)
-        print(encoding)
-        print(encoding[0])
-        print(bool(encoding[0]))
-    
+
+        table = {}
+        for v in var:
+          from random import randomint
+          table[v] = bool(randomint(0,1))
+
+        encode = parse_utils.parseBoolExpression(encoding, table)
+        #for i in range(len(var)):
+          
+
+
+        allFalse = bool(encode[0])
+
+        #for result = 
+
+    return str(allFalse) + str(table)
 
 
 

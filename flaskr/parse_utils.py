@@ -2,18 +2,15 @@ import re
 import flaskr.simpleBool as simpleBool
 
 
-def parseBoolExpression(bool_exp, variables):
+def parseBoolExpression(bool_exp, interp):
     bool_exp = re.sub("!", "! ", bool_exp)
-    for v in variables:
-        simpleBool.interpretation[v] = False
+    for k, v in interp.items():
+        simpleBool.interpretation[k] = v
     res = simpleBool.boolExpr.parseString(bool_exp)
+    simpleBool.interpretation = {} 
 
     return res
-    #success = "PASS" if bool(res) == True else "FAIL"
-    #print(bool_exp, "\n", res, "=", bool(res), "\n", success, "\n")
 
 def parseOrderingExpression(order_exp):
     no_white = re.sub(r"\s+","", order_exp)
     return re.split("<", no_white)
-
-print(parseBoolExpression("p || !q", ["p", "q"]))
