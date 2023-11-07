@@ -10,6 +10,9 @@ class Node:
     # low, high links to successor Nodes in BDD
     self.low = None
     self.high = None
+    # parent link
+    self.parent = None
+    # node's variable and assignment so far
     self.var = var
     self.var_assign = var_assign
     # value of formula, only for terminal nodes (e.g. True or False)
@@ -44,12 +47,9 @@ class BDD:
       # no more unassigned variables so evaluate the formula
       if ordering_index == len(self.ordering):
         terminal_node = Node("", parent.var_assign)
+        terminal_node.parent = parent
         # terminal_node.value = self.formula.evaluate(parent.var_assign)
-
-        self.graph.add_node(terminal_node)
-        self.graph.add_edge(parent, terminal_node)
-        self.graphNodeLabel[terminal_node] = "TF"
-        self.graphEdgeLabel[(parent, terminal_node)] = int(value)
+        terminal_node.value = "TF"
 
         return terminal_node
       
@@ -58,12 +58,7 @@ class BDD:
       var = self.ordering[ordering_index]
       curr_var_assign[var] = value
       x = Node(var, curr_var_assign)
-
-      # fill out graph
-      self.graph.add_node(x)
-      self.graph.add_edge(parent, x)
-      self.graphNodeLabel[x] = var
-      self.graphEdgeLabel[(parent, x)] = int(value)
+      x.parent = parent
 
       # recursively assign low and high
       x.low = create_subtree(x, ordering_index+1, False)
@@ -91,6 +86,31 @@ class BDD:
     
     return out_str
   
+
+  # regenerate graph, assuming create has been called
+  def regen_graph(self) -> None:
+    # reset graph attributes
+    self.graph = nx.DiGraph()
+    self.graphNodeLabel = {}
+    self.graphEdgeLabel = {}
+
+    # add nodes, edges, and labels recursively
+    def regen_graph_help(x: Node) -> None:
+      self.graph.add_node(x)
+      self.graphNodeLabel[x] = x.to_string()
+      
+      if x.low:
+        self.graph.add_edge(x, x.low)
+        self.graphEdgeLabel[(x, x.low)] = 0
+        regen_graph_help(x.low)
+      if x.high:
+        self.graph.add_edge(x, x.high)
+        self.graphEdgeLabel[(x, x.high)] = 1
+        regen_graph_help(x.high)
+
+    regen_graph_help(self.root)
+
+  
   # visualize the graph of the bdd
   def visualize(self) -> None:
 
@@ -117,7 +137,8 @@ class BDD:
       
       return positions
 
-
+    # always reset graph before drawing
+    self.regen_graph()
     pos = generate_positions()
     nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True)
     nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=self.graphEdgeLabel)
