@@ -1,4 +1,5 @@
 from collections import deque
+from typing import List
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -11,7 +12,7 @@ class Node:
     self.low = None
     self.high = None
     # parent link
-    self.parent = None
+    self.parent = []
     # node's variable and assignment so far
     self.var = var
     self.var_assign = var_assign
@@ -19,10 +20,21 @@ class Node:
     self.value = None
 
   def to_string(self) -> str:
-    if self.value is not None:
+    if self.value:
       return str(self.value)
     
     return self.var
+  
+  # return all nodes (including self) that are in this subtree
+  def get_subtree(self) -> List:
+    out = [self]
+
+    if self.low:
+      out += self.low.get_subtree
+    if self.high: 
+      out += self.high.get_subtree
+    
+    return out
 
 
 # BDD
@@ -32,8 +44,7 @@ class BDD:
     self.ordering = ordering
     self.formula = formula
     self.graph = nx.DiGraph()
-    self.graph.add_node(self.root)
-    self.graphNodeLabel = {self.root: ordering[0]}
+    self.graphNodeLabel = {}
     self.graphEdgeLabel = {}
 
     self.create()
@@ -47,7 +58,7 @@ class BDD:
       # no more unassigned variables so evaluate the formula
       if ordering_index == len(self.ordering):
         terminal_node = Node("", parent.var_assign)
-        terminal_node.parent = parent
+        terminal_node.parent.append(parent)
         # terminal_node.value = self.formula.evaluate(parent.var_assign)
         terminal_node.value = "TF"
 
@@ -58,7 +69,7 @@ class BDD:
       var = self.ordering[ordering_index]
       curr_var_assign[var] = value
       x = Node(var, curr_var_assign)
-      x.parent = parent
+      x.parent.append(parent)
 
       # recursively assign low and high
       x.low = create_subtree(x, ordering_index+1, False)
@@ -112,7 +123,7 @@ class BDD:
 
   
   # visualize the graph of the bdd
-  def visualize(self) -> None:
+  def visualize(self, nodes_to_color=None) -> None:
 
     # generate the coordinates each node should be
     def generate_positions() -> dict:
@@ -141,6 +152,8 @@ class BDD:
     self.regen_graph()
     pos = generate_positions()
     nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True)
+    if nodes_to_color:
+      nx.draw_networkx_nodes(self.graph, pos, nodes_to_color, node_color="tab:red")
     nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=self.graphEdgeLabel)
     plt.show()
 
