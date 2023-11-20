@@ -26,7 +26,7 @@ def create_app(test_config=None):
   # a simple page that says hello
   @app.route('/')
   def hello():
-    return render_template('hello.html')
+    return render_template('input.html')
     return 'Hello, World!'
   
   @app.route('/', methods=('GET', 'POST'))
@@ -36,22 +36,24 @@ def create_app(test_config=None):
         encoding = request.form.get('encoding', '')
         #content = request.form['ordering']
         var = parse_utils.parseOrderingExpression(ordering)
-
-        table = {}
-        for v in var:
-          from random import randomint
-          table[v] = bool(randomint(0,1))
-
-        encode = parse_utils.parseBoolExpression(encoding, table)
-        #for i in range(len(var)):
+        truth_list = parse_utils.createInterpretations(var)
+        encode_list = []
+        for table in truth_list:
+          encode = parse_utils.parseBoolExpression(encoding, table)
+          if not encode:
+            return redirect(url_for('create'))
+          else:
+            encode_list.append(encode)
           
+        bool_list = [bool(enc[0]) for enc in encode_list]
+        for enc in encode_list:
+          print(enc[0])
 
 
-        allFalse = bool(encode[0])
-
+        
         #for result = 
 
-    return str(allFalse) + str(table)
+    return str(truth_list) + str(bool_list)
 
 
 

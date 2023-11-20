@@ -16,7 +16,7 @@
 
 from typing import Callable, Iterable
 
-from pyparsing import infix_notation, opAssoc, Keyword, Word, alphas, ParserElement
+from pyparsing import infix_notation, opAssoc, Keyword, Word, alphas, ParserElement, exceptions
 
 ParserElement.enablePackrat()
 
@@ -26,7 +26,10 @@ interpretation = {}
 class BoolOperand:
     def __init__(self, t):
         self.label = t[0]
-        self.value = eval(t[0], interpretation)
+        try:
+            self.value = eval(t[0], interpretation)
+        except NameError as e:
+            self.value = False
 
     def __bool__(self) -> bool:
         return self.value
@@ -99,6 +102,26 @@ boolExpr = infix_notation(
     ],
 ).set_name("boolean_expression")
 
+boolOperand2 = TRUE | FALSE | Word(alphas, max=1)
+
+boolExpr2 = infix_notation(
+    boolOperand2,
+    [
+        (NOT, 1, opAssoc.RIGHT, BoolNot),
+        (AND, 2, opAssoc.LEFT, BoolAnd),
+        (OR, 2, opAssoc.LEFT, BoolOr),
+    ],
+).set_name("boolean_expression")
+
+
+def parseExpression(bool_exp):
+    try:
+        res = boolExpr.parseString(bool_exp, parseAll=True)
+        res2 = boolExpr2.parseString(bool_exp, parseAll=True)
+    except (exceptions.ParseException, NameError) as e:
+        res = None
+    print("hi", res2[0])
+    return res
 
 if __name__ == "__main__":
     p = True
