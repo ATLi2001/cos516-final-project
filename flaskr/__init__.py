@@ -40,13 +40,12 @@ def create_app(test_config=None):
       encoding = request.form.get('encoding', '')
       var = parse_utils.parseOrderingExpression(ordering)
       formula = parse_utils.parseBoolExpression(encoding)
-      print(var)
-      bdd = BDD(var, formula)
-      print(bdd.level_order())
-      import pdb
-      pdb.set_trace()
 
-      #bdd.visualize()
+      bdd = BDD(var, formula)
+
+      robdd = ROBDD(bdd)
+      while(robdd.next()):
+        robdd.curr_robdd.visualize()
       
         # ordering = request.form.get('ordering', '')
         # encoding = request.form.get('encoding', '')

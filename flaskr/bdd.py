@@ -2,6 +2,7 @@ from collections import deque
 from typing import List
 import networkx as nx
 import matplotlib.pyplot as plt
+import os
 
 # one node in BDD
 class Node:
@@ -56,6 +57,7 @@ class BDD:
     # value is the boolean value that the variable should take for this node
     def create_subtree(parent: Node, ordering_index: int, value: bool) -> Node:
 
+      # Need to make sure var_assignment is based on the previous assignment
       curr_var_assign = parent.var_assign.copy()
       prev_var = self.ordering[ordering_index - 1]
 
@@ -166,7 +168,20 @@ class BDD:
       nx.draw_networkx_nodes(self.graph, pos, nodes_to_color, node_color="tab:red")
     nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=self.graphEdgeLabel)
     #plt.show()
-    plt.savefig('save.png')
+
+    # Instead of showing plot, save it to a unique file name.
+    def uniquify(path):
+      filename, extension = os.path.splitext(path)
+      counter = 1
+
+      while os.path.exists(path):
+          path = filename + " (" + str(counter) + ")" + extension
+          counter += 1
+
+      return path
+  
+    plt.savefig(uniquify(f"images/{self.formula.__str__()}.png"))
+    plt.clf()
 
 if __name__ == "__main__":
   bdd = BDD(["a", "b", "c", "d"], "")
