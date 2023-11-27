@@ -1,4 +1,4 @@
-from bdd import BDD, Node
+from flaskr.bdd import BDD, Node
 from typing import Optional, List
 from collections import Counter
 import pdb

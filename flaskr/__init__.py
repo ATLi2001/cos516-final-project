@@ -1,6 +1,10 @@
+from flaskr.bdd import BDD
+from flaskr.robdd import ROBDD
+
 import os
 import flaskr.parse_utils as parse_utils
 from flask import Flask, render_template, request, flash, redirect, url_for
+
 
 
 def create_app(test_config=None):
@@ -32,29 +36,42 @@ def create_app(test_config=None):
   @app.route('/', methods=('GET', 'POST'))
   def create():
     if request.method == 'POST':
-        ordering = request.form.get('ordering', '')
-        encoding = request.form.get('encoding', '')
-        #content = request.form['ordering']
-        var = parse_utils.parseOrderingExpression(ordering)
-        truth_list = parse_utils.createInterpretations(var)
-        encode_list = []
-        for table in truth_list:
-          encode = parse_utils.parseBoolExpression(encoding, table)
-          if not encode:
-            return redirect(url_for('create'))
-          else:
-            encode_list.append(encode)
-          
-        bool_list = [bool(enc[0]) for enc in encode_list]
-        for enc in encode_list:
-          print(enc[0])
+      ordering = request.form.get('ordering', '')
+      encoding = request.form.get('encoding', '')
+      var = parse_utils.parseOrderingExpression(ordering)
+      formula = parse_utils.parseBoolExpression(encoding)
+      print(var)
+      bdd = BDD(var, formula)
+      print(bdd.level_order())
+      import pdb
+      pdb.set_trace()
+
+      #bdd.visualize()
+      
+        # ordering = request.form.get('ordering', '')
+        # encoding = request.form.get('encoding', '')
+        # #content = request.form['ordering']
+        # var = parse_utils.parseOrderingExpression(ordering)
+        # formula = parse_utils.parseBoolExpression(encoding)
+        # truth_list = parse_utils.createInterpretations(var)
+
+        # encode_list = []
+        # output = ""
+        # for table in truth_list:
+        #   table2 = table.copy()
+        #   encode = formula.evaluate(table2)
+        #   if not encode:
+        #     return redirect(url_for('create'))
+        #   else:
+        #     encode_list.append(encode)
+        #     output += str(table) + " "
+        
+        # bool_list = [bool(enc[0]) for enc in encode_list]
+        # output += str(bool_list)
 
 
         
-        #for result = 
-
-    return str(truth_list) + str(bool_list)
-
+    return bdd.level_order()
 
 
   return app

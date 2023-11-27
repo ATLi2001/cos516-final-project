@@ -55,19 +55,29 @@ class BDD:
     # ordering_index corresponding to the variable in the ordering
     # value is the boolean value that the variable should take for this node
     def create_subtree(parent: Node, ordering_index: int, value: bool) -> Node:
+
+      curr_var_assign = parent.var_assign.copy()
+      prev_var = self.ordering[ordering_index - 1]
+
+      curr_var_assign[prev_var] = value
+    
       # no more unassigned variables so evaluate the formula
       if ordering_index == len(self.ordering):
-        terminal_node = Node("", parent.var_assign)
+        print(curr_var_assign)
+        terminal_node = Node("", curr_var_assign)
         terminal_node.parent.append(parent)
-        # terminal_node.value = self.formula.evaluate(parent.var_assign)
-        terminal_node.value = "TF"
+        value = self.formula.evaluate(curr_var_assign)
+        if value:
+          terminal_node.value = "T"
+        else:
+          terminal_node.value = "F"
+        #terminal_node.value = "TF"
 
         return terminal_node
       
       # otherwise new node
-      curr_var_assign = parent.var_assign.copy()
+     
       var = self.ordering[ordering_index]
-      curr_var_assign[var] = value
       x = Node(var, curr_var_assign)
       x.parent.append(parent)
 
@@ -155,8 +165,8 @@ class BDD:
     if nodes_to_color:
       nx.draw_networkx_nodes(self.graph, pos, nodes_to_color, node_color="tab:red")
     nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=self.graphEdgeLabel)
-    plt.show()
-
+    #plt.show()
+    plt.savefig('save.png')
 
 if __name__ == "__main__":
   bdd = BDD(["a", "b", "c", "d"], "")
