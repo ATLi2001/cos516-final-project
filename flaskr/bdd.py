@@ -31,9 +31,9 @@ class Node:
     out = [self]
 
     if self.low:
-      out += self.low.get_subtree
+      out += self.low.get_subtree()
     if self.high: 
-      out += self.high.get_subtree
+      out += self.high.get_subtree()
     
     return out
 
