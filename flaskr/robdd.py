@@ -10,8 +10,9 @@ class ROBDD:
   
   # take one step to final ROBDD
   # return true if step taken, false otherwise
-  def next(self) -> bool:
-    if not self.merge_duplicate():
+  # default is level order, dfs_order can be set
+  def next(self, dfs_order=False) -> bool:
+    if not self.merge_duplicate(dfs_order):
       return False
     
     # now check for redundancy
@@ -21,40 +22,44 @@ class ROBDD:
     return True
   
   # find duplicate subtrees, then merge them
-  def merge_duplicate(self) -> bool:
+  def merge_duplicate(self, dfs_order: bool) -> bool:
     # find a duplicate subtree in current tree
     # no guarantee on which duplicate subtree
-    def find_duplicate_subtree(x: Optional[Node]) -> List[Optional[Node]]:
+    def find_duplicate_subtree(x: Optional[Node], dfs_order: bool) -> List[Optional[Node]]:
       ans = {}
       count = Counter()
 
-      def encode(x: Optional[Node]) -> str:
+      def encode(x: Optional[Node], level: int) -> str:
         if not x:
           return ""
         
-        encoded = x.to_string() + "#" + encode(x.low) + "#" + encode(x.high)
+        encoded = x.to_string() + "#" + encode(x.low, level+1) + "#" + encode(x.high, level+1)
 
         count[encoded] += 1
         # first appearance
         if count[encoded] == 1:
-          ans[encoded] = [x]
+          ans[encoded] = [(x, level)]
         # duplicate detected
         else:
           if x not in ans[encoded]:
-            ans[encoded].append(x)
+            ans[encoded].append((x, level))
         return encoded
       
-      encode(x)
+      encode(x, 1)
 
       if len(ans) > 0:
         for k in ans.keys():
           v = ans[k]
           if len(v) > 1:
-            return v
+            # sort by reverse level if dfs_order is False
+            if not dfs_order:
+              v = sorted(v, key=lambda xl: xl[1], reverse=True)
+            
+            return [xl[0] for xl in v]
       
       return None
     
-    dup = find_duplicate_subtree(self.curr_robdd.root)
+    dup = find_duplicate_subtree(self.curr_robdd.root, dfs_order)
     if not dup:
       return False
     
@@ -126,13 +131,13 @@ class ROBDD:
     
     return True
   
-# TODO: somehwere here parents are getting messed up
+
 if __name__ == "__main__":
   bdd = BDD(["a", "b", "c"], "")
   print(bdd.level_order())
   bdd.visualize()
 
-  pdb.set_trace()
+  # pdb.set_trace()
 
   robdd = ROBDD(bdd)
   while(robdd.next()):
