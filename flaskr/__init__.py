@@ -2,6 +2,7 @@ from flaskr.bdd import BDD
 from flaskr.robdd import ROBDD
 
 import os
+import re
 import flaskr.parse_utils as parse_utils
 from flask import Flask, render_template, request, flash, redirect, url_for
 
@@ -14,6 +15,9 @@ def create_app(test_config=None):
     SECRET_KEY='dev',
     DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
   )
+  encoding = ""
+  img_dir = ""
+  count = 0
 
   if test_config is None:
     # load the instance config, if it exists, when not testing
@@ -30,22 +34,47 @@ def create_app(test_config=None):
   # a simple page that says hello
   @app.route('/')
   def hello():
-    return render_template('input.html')
+    return render_template('input.html', name="nothing", url="")
     return 'Hello, World!'
   
   @app.route('/', methods=('GET', 'POST'))
   def create():
+    global encoding, img_dir, orig_img
+    global count
     if request.method == 'POST':
       ordering = request.form.get('ordering', '')
       encoding = request.form.get('encoding', '')
-      var = parse_utils.parseOrderingExpression(ordering)
-      formula = parse_utils.parseBoolExpression(encoding)
+      button_val = request.form.get('submit_button')
 
-      bdd = BDD(var, formula)
+      if button_val == 'Next':
+        print("Next\n")
+        print(count)
+        count = count + 1
+        img = "/" + orig_img + "(" + str(count) + ").png"
+        return render_template('result.html', name = img, url=img)
+      elif button_val == 'Previous':
+        print("Previous\n")
+        print(count)
+        if count > 0: 
+          count = count - 1
 
-      robdd = ROBDD(bdd)
-      while(robdd.next()):
-        robdd.curr_robdd.visualize()
+        if count > 0:
+          img = "/" + orig_img + "(" + str(count) + ").png"
+        else:
+          img = "/" + orig_img + ".png"
+          
+        return render_template('result.html', name = img, url=img)
+      else: #user submitted formula 
+        ## should strip trailing and leading spaces
+        encoding = encoding.strip()
+        var = parse_utils.parseOrderingExpression(ordering)
+        formula = parse_utils.parseBoolExpression(encoding)
+
+        bdd = BDD(var, formula)
+
+        robdd = ROBDD(bdd)
+        while(robdd.next()):
+          robdd.curr_robdd.visualize()
       
         # ordering = request.form.get('ordering', '')
         # encoding = request.form.get('encoding', '')
@@ -68,9 +97,21 @@ def create_app(test_config=None):
         # bool_list = [bool(enc[0]) for enc in encode_list]
         # output += str(bool_list)
 
+        img_dir = os.path.join('static', 'images')
 
-        
-    return bdd.level_order()
+        #debug examine files in dir 
+        #files = os.listdir(img_dir)
+        #print(files)
+        #for file in os.listdir(img_dir):
+        #  img_file = os.path.join(img_dir, file)
+        #  print(img_file)
 
+        count = 0 #orig_img will not have the (0) label
+        orig_img = os.path.join(img_dir, re.sub("\s+", '_', encoding))
+        #flask img dir start with root / then with subdirs static/images
+        img = "/"+ orig_img + ".png"
+        ## end of POST
+ 
+    return render_template('result.html', name = img, url=img)
 
   return app
