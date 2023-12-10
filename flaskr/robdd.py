@@ -11,8 +11,9 @@ class ROBDD:
   # take one step to final ROBDD
   # return true if step taken, false otherwise
   # default is level order, dfs_order can be set
-  def next(self, dfs_order=False) -> bool:
-    if not self.merge_duplicate(dfs_order):
+  # default is smallest subtrees first
+  def next(self, dfs_order=False, largest_first=False) -> bool:
+    if not self.merge_duplicate(dfs_order, largest_first):
       return False
     
     # now check for redundancy
@@ -22,18 +23,24 @@ class ROBDD:
     return True
   
   # find duplicate subtrees, then merge them
-  def merge_duplicate(self, dfs_order: bool) -> bool:
+  def merge_duplicate(self, dfs_order: bool, largest_first: bool) -> bool:
     # find a duplicate subtree in current tree
     # no guarantee on which duplicate subtree
-    def find_duplicate_subtree(x: Optional[Node], dfs_order: bool) -> List[Optional[Node]]:
+    def find_duplicate_subtree(x: Optional[Node], dfs_order: bool, largest_first: bool) -> List[Optional[Node]]:
       ans = {}
       count = Counter()
+      visited = set()
 
       def encode(x: Optional[Node], level: int) -> str:
         if not x:
           return ""
         
         encoded = x.to_string() + "#" + encode(x.low, level+1) + "#" + encode(x.high, level+1)
+
+        if x in visited:
+          return encoded
+        
+        visited.add(x)
 
         count[encoded] += 1
         # first appearance
@@ -48,18 +55,28 @@ class ROBDD:
       encode(x, 1)
 
       if len(ans) > 0:
-        for k in ans.keys():
+        for k in sorted(ans.keys(), key=lambda k: len(k), reverse=largest_first):
           v = ans[k]
           if len(v) > 1:
             # sort by reverse level if dfs_order is False
             if not dfs_order:
               v = sorted(v, key=lambda xl: xl[1], reverse=True)
+
+              out_first = []
+              out_second = []
+              level_count = Counter([xl[1] for xl in v])
+              for l in sorted(level_count.keys(), reverse=True):
+                # prioritize same level
+                if level_count[l] > 1:
+                  out_first.extend([xl[0] for xl in v if xl[1] == l])
+                else:
+                  out_second.extend([xl[0] for xl in v if xl[1] == l])
             
-            return [xl[0] for xl in v]
+            return out_first + out_second
       
       return None
     
-    dup = find_duplicate_subtree(self.curr_robdd.root, dfs_order)
+    dup = find_duplicate_subtree(self.curr_robdd.root, dfs_order, largest_first)
     if not dup:
       return False
     

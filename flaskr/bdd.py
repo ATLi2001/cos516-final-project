@@ -135,20 +135,27 @@ class BDD:
 
   
   # visualize the graph of the bdd
-  def visualize(self, nodes_to_color=None) -> None:
+  def visualize(self, nodes_to_color=None, length=1, width=1, manual_readjust=False) -> None:
 
     # generate the coordinates each node should be
-    def generate_positions() -> dict:
+    # length, width are overall rectangle space
+    def generate_positions(length: int, width: int, manual_readjust: bool) -> dict:
       positions = {}
 
-      vertical_space = 1 / (len(self.ordering) * 1.5)
-      horizontal_space = 1 / (len(self.ordering) * 2.5)
+      vertical_space = length / (len(self.ordering) * 1.5)
+      horizontal_space = width / (len(self.ordering) * 2.5)
+
+      root_y = 0.9 * length
 
       # do bfs on (node, x, y, level)
-      queue = deque([(self.root, 0.5, 0.9, 0)])
+      queue = deque([(self.root, 0.5 * width, root_y, 0)])
+      # track the nodes on each level
+      level_track = {}
       while len(queue) > 0:
         curr_node, x, y, level = queue.popleft()
         positions[curr_node] = (x, y)
+
+        level_track[curr_node] = level
 
         # need more horizontal space so nodes don't overlap
         dx = horizontal_space * 0.5**level
@@ -158,11 +165,31 @@ class BDD:
         if curr_node.high:
           queue.append((curr_node.high, x + dx, y - vertical_space, level+1))
       
+      # manually readjust positions
+      if manual_readjust:
+        # go from level to nodes
+        rev_level_track = {}
+        for k, v in level_track.items():
+          if v not in rev_level_track.keys():
+            rev_level_track[v] = [k]
+          else: 
+            rev_level_track[v].append(k)
+
+        # for each level, adjust positions
+        for l, nodes in rev_level_track.items():
+          nodes_with_xpos = []
+          for n in nodes:
+            nodes_with_xpos.append((n, positions[n][0]))
+          
+          # center the nodes from left to right
+          for i, nx in enumerate(sorted(nodes_with_xpos, key=lambda nx: nx[1])):
+            positions[nx[0]] = ((i+1) * width / (len(nodes) + 1), root_y - l * vertical_space)
+      
       return positions
 
     # always reset graph before drawing
     self.regen_graph()
-    pos = generate_positions()
+    pos = generate_positions(length, width, manual_readjust)
     nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True)
     if nodes_to_color:
       nx.draw_networkx_nodes(self.graph, pos, nodes_to_color, node_color="tab:red")
