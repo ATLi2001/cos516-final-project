@@ -30,10 +30,15 @@ class ROBDD:
       ans = {}
       count = Counter()
       visited = set()
+      # track duplicates that are two terminal nodes of same parent that are identical
+      priority_duplicates = []
 
       def encode(x: Optional[Node], level: int) -> str:
         if not x:
           return ""
+        
+        if x.low and x.high and x.low.value and x.high.value and x.low.value == x.high.value:
+          priority_duplicates.append((x.low, x.high))
         
         encoded = x.to_string() + "#" + encode(x.low, level+1) + "#" + encode(x.high, level+1)
 
@@ -54,6 +59,9 @@ class ROBDD:
       
       encode(x, 1)
 
+      if len(priority_duplicates) > 0:
+        return [priority_duplicates[0][0], priority_duplicates[0][1]]
+
       if len(ans) > 0:
         for k in sorted(ans.keys(), key=lambda k: len(k), reverse=largest_first):
           v = ans[k]
@@ -66,11 +74,12 @@ class ROBDD:
               out_second = []
               level_count = Counter([xl[1] for xl in v])
               for l in sorted(level_count.keys(), reverse=True):
-                # prioritize same level
+                curr_level_nodes = [xl[0] for xl in v if xl[1] == l]
+                # prioritize levels with more than 1 node
                 if level_count[l] > 1:
-                  out_first.extend([xl[0] for xl in v if xl[1] == l])
+                  out_first.extend(curr_level_nodes)
                 else:
-                  out_second.extend([xl[0] for xl in v if xl[1] == l])
+                  out_second.extend(curr_level_nodes)
             
             return out_first + out_second
       

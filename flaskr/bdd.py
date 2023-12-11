@@ -47,6 +47,7 @@ class BDD:
     self.graph = nx.DiGraph()
     self.graphNodeLabel = {}
     self.graphEdgeLabel = {}
+    self.terminal_nodes = []
 
     self.create()
   
@@ -116,6 +117,7 @@ class BDD:
     self.graph = nx.DiGraph()
     self.graphNodeLabel = {}
     self.graphEdgeLabel = {}
+    self.terminal_nodes = []
 
     # add nodes, edges, and labels recursively
     def regen_graph_help(x: Node) -> None:
@@ -130,6 +132,9 @@ class BDD:
         self.graph.add_edge(x, x.high)
         self.graphEdgeLabel[(x, x.high)] = 1
         regen_graph_help(x.high)
+      
+      if not x.low and not x.high:
+        self.terminal_nodes.append(x)
 
     regen_graph_help(self.root)
 
@@ -190,9 +195,17 @@ class BDD:
     # always reset graph before drawing
     self.regen_graph()
     pos = generate_positions(length, width, manual_readjust)
-    nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True)
+    nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True, node_color="#ffd7b5")
+    # draw terminal nodes with different color
+    nx.draw_networkx_nodes(self.graph, pos, self.terminal_nodes, node_color="#ff6700")
+    # draw low edges, high edges in different colors
+    low_edges = [e for e in self.graphEdgeLabel.keys() if self.graphEdgeLabel[e] == 0]
+    high_edges = [e for e in self.graphEdgeLabel.keys() if self.graphEdgeLabel[e] == 1]
+    nx.draw_networkx_edges(self.graph, pos, low_edges, edge_color="#ff5252")
+    nx.draw_networkx_edges(self.graph, pos, high_edges, edge_color="#000000")
+    # highlight extra nodes
     if nodes_to_color:
-      nx.draw_networkx_nodes(self.graph, pos, nodes_to_color, node_color="tab:red")
+      nx.draw_networkx_nodes(self.graph, pos, nodes_to_color, node_color="#ffff00")
     nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=self.graphEdgeLabel)
     #plt.show()
 
