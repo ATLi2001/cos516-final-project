@@ -1,8 +1,13 @@
 from collections import deque
 from typing import List
 import networkx as nx
+
 import matplotlib.pyplot as plt
 import os
+import re
+
+import matplotlib
+matplotlib.use('Agg')
 
 # one node in BDD
 class Node:
@@ -214,13 +219,17 @@ class BDD:
       filename, extension = os.path.splitext(path)
       counter = 1
 
+      #replace spaces with _ to faciliate image loading
+      path = re.sub("\s+", '_', path)
+      filename = re.sub("\s+", '_', filename)
+     
       while os.path.exists(path):
-          path = filename + " (" + str(counter) + ")" + extension
+          path = filename + "(" + str(counter) + ")" + extension
           counter += 1
 
       return path
   
-    plt.savefig(uniquify(f"images/{self.formula.__str__()}.png"))
+    plt.savefig(uniquify(f"static/images/{self.formula.__str__()}.png"))
     plt.clf()
 
 if __name__ == "__main__":

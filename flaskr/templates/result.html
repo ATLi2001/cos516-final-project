@@ -1,0 +1,18 @@
+<!doctype html>
+<link rel= "stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/result.css')}}">
+<head>
+    <form method="post">
+        <div class="header" style="text-align:center">
+            <h1>Visualizer of BDD to ROBDD Transformation</h1>
+            <p> Press 'Next' button to see the next step transformation
+            <p> Press 'Previous' button to viewer the previous step. 
+        </div>
+
+        <div class="form-button-container">
+          <input type="submit" name="submit_button" value="Previous">
+          <input type="submit" name="submit_button" value="Next">
+        </div>
+    </form>
+    <p>{{ name }}</p>
+    <img src={{ url}} alt="Chart" class="img-center">
+</head>
