@@ -1,7 +1,13 @@
 <!doctype html>
 <link rel= "stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/default.css')}}">
+
+<script>
+    function onSubmit() {
+        document.getElementById("waiting").style.display = "flex"
+    }
+</script>
 <head>
-    <form method="post">
+    <form method="post" onSubmit="onSubmit()">
         <div class="roundbox" style="background-color:#f2f3f5">
             <h1>BDD Visualizer <h1>
         </div>
@@ -13,9 +19,19 @@
             <h2> Enter the ordering here </h2>
         </div>
         <textarea placeholder = "b1 < c3 < a2" rows = "5" cols = "60" name = "ordering"></textarea><br>
+        <div class="roundbox">
+        <INPUT TYPE="radio" NAME="q1" VALUE="False" checked>Level Order Reduction
+        <INPUT TYPE="radio" NAME="q1" VALUE="True" > DFS Reduction
+        </div>
+        <div class="roundbox">
+            <INPUT TYPE="radio" NAME="q2" VALUE="False" checked> Smallest Subtree First
+            <INPUT TYPE="radio" NAME="q2" VALUE="True"> Largest Subtree First
+        </div>
         <center>
         <input type="submit" value="Submit" style="font-size: 18px">
-        
+        <div class="roundbox" id="waiting" style="background-color:#f2f3f5; width: 100px; display: none">
+            <b>Waiting...</b>
+        </div>
         </center>
     </form>
     <footer>

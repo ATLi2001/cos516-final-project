@@ -10,8 +10,10 @@ class ROBDD:
   
   # take one step to final ROBDD
   # return true if step taken, false otherwise
-  def next(self) -> bool:
-    if not self.merge_duplicate():
+  # default is level order, dfs_order can be set
+  # default is smallest subtrees first
+  def next(self, dfs_order=False, largest_first=False) -> bool:
+    if not self.merge_duplicate(dfs_order, largest_first):
       return False
     
     # now check for redundancy
@@ -21,40 +23,71 @@ class ROBDD:
     return True
   
   # find duplicate subtrees, then merge them
-  def merge_duplicate(self) -> bool:
+  def merge_duplicate(self, dfs_order: bool, largest_first: bool) -> bool:
     # find a duplicate subtree in current tree
     # no guarantee on which duplicate subtree
-    def find_duplicate_subtree(x: Optional[Node]) -> List[Optional[Node]]:
+    def find_duplicate_subtree(x: Optional[Node], dfs_order: bool, largest_first: bool) -> List[Optional[Node]]:
       ans = {}
       count = Counter()
+      visited = set()
+      # track duplicates that are two terminal nodes of same parent that are identical
+      priority_duplicates = []
 
-      def encode(x: Optional[Node]) -> str:
+      def encode(x: Optional[Node], level: int) -> str:
         if not x:
           return ""
         
-        encoded = x.to_string() + "#" + encode(x.low) + "#" + encode(x.high)
+        if x.low and x.high and x.low.value and x.high.value and x.low.value == x.high.value:
+          priority_duplicates.append((x.low, x.high))
+        
+        encoded = x.to_string() + "#" + encode(x.low, level+1) + "#" + encode(x.high, level+1)
+
+        if x in visited:
+          return encoded
+        
+        visited.add(x)
 
         count[encoded] += 1
         # first appearance
         if count[encoded] == 1:
-          ans[encoded] = [x]
+          ans[encoded] = [(x, level)]
         # duplicate detected
         else:
           if x not in ans[encoded]:
-            ans[encoded].append(x)
+            ans[encoded].append((x, level))
         return encoded
       
-      encode(x)
+      encode(x, 1)
+
+      if len(priority_duplicates) > 0:
+        return [priority_duplicates[0][0], priority_duplicates[0][1]]
 
       if len(ans) > 0:
-        for k in ans.keys():
+        for k in sorted(ans.keys(), key=lambda k: len(k), reverse=largest_first):
           v = ans[k]
           if len(v) > 1:
-            return v
+            # sort by reverse level if dfs_order is False
+            if not dfs_order:
+              v = sorted(v, key=lambda xl: xl[1], reverse=True)
+
+              out_first = []
+              out_second = []
+              level_count = Counter([xl[1] for xl in v])
+              for l in sorted(level_count.keys(), reverse=True):
+                curr_level_nodes = [xl[0] for xl in v if xl[1] == l]
+                # prioritize levels with more than 1 node
+                if level_count[l] > 1:
+                  out_first.extend(curr_level_nodes)
+                else:
+                  out_second.extend(curr_level_nodes)
+            
+              return out_first + out_second
+            else:
+              return v
       
       return None
     
-    dup = find_duplicate_subtree(self.curr_robdd.root)
+    dup = find_duplicate_subtree(self.curr_robdd.root, dfs_order, largest_first)
     if not dup:
       return False
     
@@ -127,13 +160,13 @@ class ROBDD:
     
     return True
   
-# TODO: somehwere here parents are getting messed up
+
 if __name__ == "__main__":
   bdd = BDD(["a", "b", "c"], "")
   print(bdd.level_order())
   bdd.visualize()
 
-  pdb.set_trace()
+  # pdb.set_trace()
 
   robdd = ROBDD(bdd)
   while(robdd.next()):

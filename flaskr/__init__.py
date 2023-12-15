@@ -68,6 +68,8 @@ def create_app(test_config=None):
 
 
       if not button_val and not adjust_val:
+        traversal_val = eval(request.form.get('q1'))
+        subtree_val = eval(request.form.get('q2'))
        #user submitted formula 
         parse_utils.cleanImages("static/images")
         var = parse_utils.parseOrderingExpression(ordering)
@@ -80,8 +82,8 @@ def create_app(test_config=None):
         robdd.curr_robdd.visualize(manual_readjust=False)
         robdd.curr_robdd.visualize(manual_readjust=True)
         max_count = 1
-        
-        while(robdd.next()):
+
+        while(robdd.next(dfs_order= traversal_val, largest_first= subtree_val)):
           robdd.curr_robdd.visualize(manual_readjust=False)
           robdd.curr_robdd.visualize(manual_readjust=True)
           max_count += 2
