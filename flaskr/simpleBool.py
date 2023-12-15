@@ -16,7 +16,7 @@
 
 from typing import Callable, Iterable
 
-from pyparsing import infix_notation, opAssoc, Keyword, Word, alphas, ParserElement, exceptions
+from pyparsing import infix_notation, opAssoc, Keyword, Word, alphanums, ParserElement, exceptions
 
 ParserElement.enablePackrat()
 
@@ -36,7 +36,7 @@ class Formula:
         NOT = Keyword("!")
         AND = Keyword("&&")
         OR = Keyword("||")
-        boolOperand = TRUE | FALSE | Word(alphas, max=1)
+        boolOperand = TRUE | FALSE | Word(alphanums)
         boolOperand.add_condition(self.parseVars, message = "Not all variables are included in the ordering.", fatal = True)
         boolOperand.add_parse_action(BoolOperand).set_name("bool_operand")
 

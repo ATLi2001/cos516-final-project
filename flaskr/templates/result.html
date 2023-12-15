@@ -1,18 +1,32 @@
 <!doctype html>
-<link rel= "stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/result.css')}}">
+<link rel= "stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/default.css')}}">
 <head>
     <form method="post">
-        <div class="header" style="text-align:center">
+        <div class="roundbox" style="background-color:#f2f3f5">
             <h1>Visualizer of BDD to ROBDD Transformation</h1>
-            <p> Press 'Next' button to see the next step transformation
-            <p> Press 'Previous' button to viewer the previous step. 
+
+        </div>
+        <div class="roundbox" style="text-align:center">
+            <p> Press the <b>'Next'</b> button to view the next reduction step<br>
+            Press the <b>'Previous'</b> button to view the previous reduction step. </p> 
         </div>
 
-        <div class="form-button-container">
-          <input type="submit" name="submit_button" value="Previous">
-          <input type="submit" name="submit_button" value="Next">
+        <div class="roundbox" style="width:200px">
+          <input type="submit" style="min-width:70px;" name="submit_button" value="Previous">
+          <input type="submit" style="min-width:70px;" name="submit_button" value="Next">
         </div>
     </form>
-    <p>{{ name }}</p>
+    <center>
+    <h3>{{count}}</h3> <br>
+    </center>
     <img src={{ url}} alt="Chart" class="img-center">
+    <br>
+    <form method="post">
+    <center>
+        <input type="submit" name="adjust" style="font-size: 18px" value="{{ adjust }}">
+    </center>
+    </form>
+    <footer>
+        <p>Authors: Austin Li and Kenny Poor</p>
+    </footer>
 </head>

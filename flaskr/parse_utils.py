@@ -2,7 +2,7 @@ import re
 import flaskr.simpleBool as simpleBool
 #import wtforms import Form, StringField, validators
 import itertools
-
+import os
 
 #interp
 # for k, v in interp.items():
@@ -10,9 +10,13 @@ import itertools
 #    res = simpleBool.parseExpression(bool_exp)
     
 #    simpleBool.interpretation = {} 
+def cleanImages(folder):
+    for filename in os.listdir(folder):
+        if os.path.isfile(os.path.join(folder, filename)):
+            os.remove(os.path.join(folder, filename))
+
 
 def parseBoolExpression(bool_exp):
-    bool_exp = re.sub("!", "! ", bool_exp)
     return simpleBool.Formula(bool_exp)
 
 def parseOrderingExpression(order_exp):

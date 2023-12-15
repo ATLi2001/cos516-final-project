@@ -1,19 +1,27 @@
 <!doctype html>
-<link rel= "stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/input.css')}}">
+<link rel= "stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/default.css')}}">
 <head>
     <form method="post">
-        <div class="header" style="text-align:center">
-            <h1>Enter the encoding here</h1>
+        <div class="roundbox" style="background-color:#f2f3f5">
+            <h1>BDD Visualizer <h1>
         </div>
-        <textarea rows = "5" cols = "60" name = "encoding"></textarea><br>
-        <div class="header" style="text-align:center">
-            <h1> Enter the ordering here </h1>
+        <div class="roundbox" >
+            <h2>Enter the encoding here</h2>
         </div>
-        <textarea rows = "5" cols = "60" name = "ordering"></textarea><br>
+        <textarea placeholder = "a1 && (!b2 || c3)" rows = "5" cols = "60" name = "encoding"></textarea><br>
+        <div class="roundbox">
+            <h2> Enter the ordering here </h2>
+        </div>
+        <textarea placeholder = "b1 < c3 < a2" rows = "5" cols = "60" name = "ordering"></textarea><br>
         <center>
         <input type="submit" value="Submit" style="font-size: 18px">
-	</center>
+        
+        </center>
     </form>
+    <footer>
+        <p>Authors: Austin Li and Kenny Poor</p>
+
+    </footer>
     <!--p>{{ name }}</p>
     <img src={{ url}} alt="Chart" -->
 </head>

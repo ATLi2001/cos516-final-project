@@ -15,9 +15,6 @@ def create_app(test_config=None):
     SECRET_KEY='dev',
     DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
   )
-  encoding = ""
-  img_dir = ""
-  count = 0
 
   if test_config is None:
     # load the instance config, if it exists, when not testing
@@ -31,87 +28,68 @@ def create_app(test_config=None):
     os.makedirs(app.instance_path)
   except OSError:
     pass
+
   # a simple page that says hello
   @app.route('/')
-  def hello():
-    return render_template('input.html', name="nothing", url="")
-    return 'Hello, World!'
+  def homepage():
+    return render_template('input.html', count="nothing", url="")
   
   @app.route('/', methods=('GET', 'POST'))
   def create():
-    global encoding, img_dir, orig_img
-    global count
+    global count, max_count, orig_img, adjust_bool
+
+    def displayResult():
+      adjust_str = "_adjust" if adjust_bool else ""
+      adjust_button = "Revert Adjust" if adjust_bool else "Adjust Nodes"
+      img = "/" + orig_img + "(" + str(count) + ")" + adjust_str + ".png"
+      cnt_str = str(count) + "/" + str(max_count)
+      print(adjust_button, adjust_bool)
+      return render_template('result.html', count = cnt_str, url=img, adjust=adjust_button)
+
     if request.method == 'POST':
       ordering = request.form.get('ordering', '')
       encoding = request.form.get('encoding', '')
+        ## should strip trailing and leading spaces and add space
+      encoding = re.sub("!", "! ", encoding.strip())
       button_val = request.form.get('submit_button')
+      adjust_val = request.form.get('adjust')
+      
 
       if button_val == 'Next':
-        print("Next\n")
-        print(count)
-        count = count + 1
-        img = "/" + orig_img + "(" + str(count) + ").png"
-        return render_template('result.html', name = img, url=img)
-      elif button_val == 'Previous':
-        print("Previous\n")
-        print(count)
-        if count > 0: 
-          count = count - 1
+        if count < max_count:
+          count = count + 1
 
-        if count > 0:
-          img = "/" + orig_img + "(" + str(count) + ").png"
-        else:
-          img = "/" + orig_img + ".png"
-          
-        return render_template('result.html', name = img, url=img)
-      else: #user submitted formula 
-        ## should strip trailing and leading spaces
-        encoding = encoding.strip()
+      if button_val == 'Previous':
+        if count > 1: 
+          count -= 1
+
+      if adjust_val:
+        adjust_bool = not adjust_bool
+
+
+      if not button_val and not adjust_val:
+       #user submitted formula 
+        parse_utils.cleanImages("static/images")
         var = parse_utils.parseOrderingExpression(ordering)
         formula = parse_utils.parseBoolExpression(encoding)
 
         bdd = BDD(var, formula)
 
         robdd = ROBDD(bdd)
-        while(robdd.next()):
-          robdd.curr_robdd.visualize()
-      
-        # ordering = request.form.get('ordering', '')
-        # encoding = request.form.get('encoding', '')
-        # #content = request.form['ordering']
-        # var = parse_utils.parseOrderingExpression(ordering)
-        # formula = parse_utils.parseBoolExpression(encoding)
-        # truth_list = parse_utils.createInterpretations(var)
 
-        # encode_list = []
-        # output = ""
-        # for table in truth_list:
-        #   table2 = table.copy()
-        #   encode = formula.evaluate(table2)
-        #   if not encode:
-        #     return redirect(url_for('create'))
-        #   else:
-        #     encode_list.append(encode)
-        #     output += str(table) + " "
+        robdd.curr_robdd.visualize(manual_readjust=False)
+        robdd.curr_robdd.visualize(manual_readjust=True)
+        max_count = 1
         
-        # bool_list = [bool(enc[0]) for enc in encode_list]
-        # output += str(bool_list)
+        while(robdd.next()):
+          robdd.curr_robdd.visualize(manual_readjust=False)
+          robdd.curr_robdd.visualize(manual_readjust=True)
+          max_count += 2
 
-        img_dir = os.path.join('static', 'images')
-
-        #debug examine files in dir 
-        #files = os.listdir(img_dir)
-        #print(files)
-        #for file in os.listdir(img_dir):
-        #  img_file = os.path.join(img_dir, file)
-        #  print(img_file)
-
-        count = 0 #orig_img will not have the (0) label
-        orig_img = os.path.join(img_dir, re.sub("\s+", '_', encoding))
-        #flask img dir start with root / then with subdirs static/images
-        img = "/"+ orig_img + ".png"
-        ## end of POST
- 
-    return render_template('result.html', name = img, url=img)
+        count = 1
+        orig_img = os.path.join('static', 'images', re.sub("\s+", '_', encoding))
+        adjust_bool = False
+      print(button_val, adjust_val)
+      return displayResult()
 
   return app

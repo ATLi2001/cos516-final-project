@@ -62,7 +62,6 @@ class BDD:
     # ordering_index corresponding to the variable in the ordering
     # value is the boolean value that the variable should take for this node
     def create_subtree(parent: Node, ordering_index: int, value: bool) -> Node:
-
       # Need to make sure var_assignment is based on the previous assignment
       curr_var_assign = parent.var_assign.copy()
       prev_var = self.ordering[ordering_index - 1]
@@ -147,6 +146,16 @@ class BDD:
   # visualize the graph of the bdd
   def visualize(self, nodes_to_color=None, length=1, width=1, manual_readjust=False) -> None:
 
+    def split_terminal_node(terminal_nodes):
+      true_arr = []
+      false_arr = []
+      for node in terminal_nodes:
+        if node.value == "T":
+          true_arr.append(node)
+        if node.value == "F":
+          false_arr.append(node)
+      return true_arr, false_arr
+
     # generate the coordinates each node should be
     # length, width are overall rectangle space
     def generate_positions(length: int, width: int, manual_readjust: bool) -> dict:
@@ -202,7 +211,10 @@ class BDD:
     pos = generate_positions(length, width, manual_readjust)
     nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True, node_color="#ffd7b5")
     # draw terminal nodes with different color
-    nx.draw_networkx_nodes(self.graph, pos, self.terminal_nodes, node_color="#ff6700")
+    green_nodes, red_nodes = split_terminal_node(self.terminal_nodes)
+    #nx.draw_networkx_nodes(self.graph, pos, self.terminal_nodes, node_color="#ff6700")
+    nx.draw_networkx_nodes(self.graph, pos, green_nodes, node_color="#00ff00")
+    nx.draw_networkx_nodes(self.graph, pos, red_nodes, node_color="#ff0000")
     # draw low edges, high edges in different colors
     low_edges = [e for e in self.graphEdgeLabel.keys() if self.graphEdgeLabel[e] == 0]
     high_edges = [e for e in self.graphEdgeLabel.keys() if self.graphEdgeLabel[e] == 1]
@@ -220,14 +232,17 @@ class BDD:
       counter = 1
 
       #replace spaces with _ to faciliate image loading
-      path = re.sub("\s+", '_', path)
       filename = re.sub("\s+", '_', filename)
-     
+      path = filename + "(" + str(counter) + ")" + extension
+
+      read_adjust = "_adjust" if manual_readjust else ""
+
       while os.path.exists(path):
-          path = filename + "(" + str(counter) + ")" + extension
+          path = filename + "(" + str(counter) + ")" + read_adjust + extension
           counter += 1
 
       return path
+
   
     plt.savefig(uniquify(f"static/images/{self.formula.__str__()}.png"))
     plt.clf()
