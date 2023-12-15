@@ -32,7 +32,7 @@ def create_app(test_config=None):
   # a simple page that says hello
   @app.route('/')
   def homepage():
-    return render_template('input.html', count="nothing", url="")
+    return render_template('input.html', message="")
   
   @app.route('/', methods=('GET', 'POST'))
   def create():
@@ -74,6 +74,9 @@ def create_app(test_config=None):
         parse_utils.cleanImages("static/images")
         var = parse_utils.parseOrderingExpression(ordering)
         formula = parse_utils.parseBoolExpression(encoding)
+        print("this is", formula)
+        if not formula.evaluate({k:True for k in var}):
+          return render_template('input.html', message="Error")
 
         bdd = BDD(var, formula)
 
