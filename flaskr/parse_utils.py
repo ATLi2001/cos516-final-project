@@ -10,6 +10,9 @@ import os
     
 #    simpleBool.interpretation = {} 
 def cleanImages(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
     for filename in os.listdir(folder):
         if os.path.isfile(os.path.join(folder, filename)):
             os.remove(os.path.join(folder, filename))

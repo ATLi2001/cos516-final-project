@@ -59,7 +59,7 @@ class ROBDD:
       
       encode(x, 1)
 
-      if len(priority_duplicates) > 0:
+      if not largest_first and len(priority_duplicates) > 0:
         return [priority_duplicates[0][0], priority_duplicates[0][1]]
 
       if len(ans) > 0:
@@ -83,7 +83,7 @@ class ROBDD:
             
               return out_first + out_second
             else:
-              return v
+              return [xl[0] for xl in v]
       
       return None
     
@@ -152,7 +152,8 @@ class ROBDD:
         else:
           parent.high = redundant_node.low
         
-        redundant_node.low.parent.remove(redundant_node)
+        if redundant_node in redundant_node.low.parent:
+          redundant_node.low.parent.remove(redundant_node)
         if parent not in redundant_node.low.parent:
           redundant_node.low.parent.append(parent)
     

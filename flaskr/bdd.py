@@ -145,17 +145,17 @@ class BDD:
 
   
   # visualize the graph of the bdd
-  def visualize(self, nodes_to_color=None, length=1, width=1, manual_readjust=False) -> None:
+  def visualize(self, nodes_to_color=None, manual_readjust=False) -> None:
 
     # generate the coordinates each node should be
-    # length, width are overall rectangle space
-    def generate_positions(length: int, width: int, manual_readjust: bool) -> dict:
+    # width, heightare overall rectangle space
+    def generate_positions(width: float, height: float, manual_readjust: bool) -> dict:
       positions = {}
 
-      vertical_space = length / (len(self.ordering) * 1.5)
+      vertical_space = height / (len(self.ordering) * 1.5)
       horizontal_space = width / (len(self.ordering) * 2.5)
 
-      root_y = 0.9 * length
+      root_y = 0.9 * height
 
       # do bfs on (node, x, y, level)
       queue = deque([(self.root, 0.5 * width, root_y, 0)])
@@ -199,13 +199,17 @@ class BDD:
 
     # always reset graph before drawing
     self.regen_graph()
-    pos = generate_positions(length, width, manual_readjust)
+    scale = max(len(self.ordering) - 3, 1)
+    height = 4.8 * scale
+    width = 6.4 * scale
+    pos = generate_positions(width, height, manual_readjust)
+    plt.figure(figsize=(width, height))
     nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True, node_color="#ffd7b5")
     # draw terminal nodes with different color
     green_node = [v for v in self.terminal_nodes if v.value == "T"]
     red_node   = [v for v in self.terminal_nodes if v.value == "F"]
-    nx.draw_networkx_nodes(self.graph, pos, green_node, node_color="#ff0000")
-    nx.draw_networkx_nodes(self.graph, pos, red_node, node_color="#00ff00")
+    nx.draw_networkx_nodes(self.graph, pos, green_node, node_color="#00ff00")
+    nx.draw_networkx_nodes(self.graph, pos, red_node, node_color="#ff0000")
     # draw low edges, high edges in different colors
     low_edges = [e for e in self.graphEdgeLabel.keys() if self.graphEdgeLabel[e] == 0]
     high_edges = [e for e in self.graphEdgeLabel.keys() if self.graphEdgeLabel[e] == 1]
