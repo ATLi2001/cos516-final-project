@@ -6,10 +6,7 @@
             <h1>Visualizer of BDD to ROBDD Transformation</h1>
 
         </div>
-        <div class="roundbox" style="text-align:center">
-            <p> Press the <b>'Next'</b> button to view the next reduction step<br>
-            Press the <b>'Previous'</b> button to view the previous reduction step. </p> 
-        </div>
+
 
         <div class="roundbox" style="width:200px">
           <input type="submit" style="min-width:70px;" name="submit_button" value="Previous">
@@ -20,6 +17,14 @@
     <h3>{{count}}</h3> <br>
     </center>
     <img src={{ url}} alt="Chart" class="img-center">
+    <br>
+    <div class="roundbox" style="text-align:center">
+        <p> Press the <b>'Next'</b> button to view the next reduction step<br>
+        Press the <b>'Previous'</b> button to view the previous reduction step. <br>
+        Press the <b>'{{ adjust }}'</b> button to adjust the position of the nodes. <br>
+        Press the <b>'Return Home'</b> button to input another formula and ordering.
+        </p> 
+    </div>
     <br>
     <form method="post">
     <center>

@@ -21,7 +21,7 @@ textarea {
 
   textarea {
     width: 70%;
-    height: 150px;
+    min-height: 80px;
     padding: 12px 20px;
     box-sizing: border-box;
     border: 2px solid #ccc;
