@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import os
 import re
 
+from flaskr.parse_utils import cleanFileName
+
 import matplotlib
 matplotlib.use('Agg')
 
@@ -75,9 +77,9 @@ class BDD:
         terminal_node = Node("", curr_var_assign)
         terminal_node.parent.append(parent)
         value = self.formula.evaluate(curr_var_assign)
-        if value:
+        if value == True:
           terminal_node.value = "T"
-        else:
+        if value == False:
           terminal_node.value = "F"
         #terminal_node.value = "TF"
 
@@ -206,8 +208,8 @@ class BDD:
     plt.figure(figsize=(width, height))
     nx.draw(self.graph, pos, labels=self.graphNodeLabel, with_labels=True, node_color="#ffd7b5")
     # draw terminal nodes with different color
-    green_node = [v for v in self.terminal_nodes if v.value == "T"]
     red_node   = [v for v in self.terminal_nodes if v.value == "F"]
+    green_node = [v for v in self.terminal_nodes if v.value == "T"]
     nx.draw_networkx_nodes(self.graph, pos, green_node, node_color="#00ff00")
     nx.draw_networkx_nodes(self.graph, pos, red_node, node_color="#ff0000")
     # draw low edges, high edges in different colors
@@ -227,7 +229,7 @@ class BDD:
       counter = 1
 
       #replace spaces with _ to faciliate image loading
-      filename = re.sub("\s+", '_', filename)
+      filename = cleanFileName(filename)
       path = filename + "(" + str(counter) + ")" + extension
 
       read_adjust = "_adjust" if manual_readjust else ""

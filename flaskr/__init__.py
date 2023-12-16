@@ -43,17 +43,19 @@ def create_app(test_config=None):
       adjust_button = "Revert Adjust" if adjust_bool else "Adjust Nodes"
       img = "/" + orig_img + "(" + str(count) + ")" + adjust_str + ".png"
       cnt_str = str(count) + "/" + str(max_count)
-      print(adjust_button, adjust_bool)
       return render_template('result.html', count = cnt_str, url=img, adjust=adjust_button)
 
     if request.method == 'POST':
       ordering = request.form.get('ordering', '')
       encoding = request.form.get('encoding', '')
         ## should strip trailing and leading spaces and add space
-      encoding = re.sub("!", "! ", encoding.strip())
+      encoding = parse_utils.cleanFormulaInput(encoding)
       button_val = request.form.get('submit_button')
       adjust_val = request.form.get('adjust')
       
+      if adjust_val == 'Return Home':
+        adjust_bool = False
+        return render_template('input.html')
 
       if button_val == 'Next':
         if count < max_count:
@@ -74,8 +76,8 @@ def create_app(test_config=None):
         parse_utils.cleanImages("static/images")
         var = parse_utils.parseOrderingExpression(ordering)
         formula = parse_utils.parseBoolExpression(encoding)
-        print("this is", formula)
-        if not formula.evaluate({k:True for k in var}):
+
+        if formula.evaluate({k:True for k in var}) == None:
           return render_template('input.html', message="Error")
 
         bdd = BDD(var, formula)
@@ -92,7 +94,7 @@ def create_app(test_config=None):
           max_count += 2
 
         count = 1
-        orig_img = os.path.join('static', 'images', re.sub("\s+", '_', encoding))
+        orig_img = os.path.join('static', 'images', parse_utils.cleanFileName(encoding))
         adjust_bool = False
       print(button_val, adjust_val)
       return displayResult()
